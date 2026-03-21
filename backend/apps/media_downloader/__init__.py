@@ -55,17 +55,3 @@ def check_status(task_id: str):
     if task_id not in DOWNLOAD_TASKS:
         raise HTTPException(status_code=404, detail="Task not found")
     return DOWNLOAD_TASKS[task_id]
-
-@router.get("/library")
-def check_library():
-    if not os.path.exists(LIBRARY_DIR):
-        os.makedirs(LIBRARY_DIR)
-        
-    files = []
-    for f in os.listdir(LIBRARY_DIR):
-        if os.path.isfile(os.path.join(LIBRARY_DIR, f)):
-            size_mb = round(os.path.getsize(os.path.join(LIBRARY_DIR, f)) / (1024 * 1024), 2)
-            files.append({"name": f, "size_mb": size_mb})
-            
-    files = sorted(files, key=lambda x: x["name"])
-    return {"files": files}

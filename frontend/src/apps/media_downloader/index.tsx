@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Download, CheckCircle, RefreshCcw, FolderOpen, XCircle, Clipboard } from 'lucide-react';
+import { Download, RefreshCcw, XCircle, Clipboard } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 
 export const MediaDownloaderWidget = () => {
@@ -14,8 +14,6 @@ export const MediaDownloaderWidget = () => {
   
   const [taskId, setTaskId] = useState<string | null>(null);
   const [status, setStatus] = useState<any>(null);
-  const [library, setLibrary] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'download' | 'library'>('download');
   const [loading, setLoading] = useState(false);
   
   const token = useStore(state => state.token);
@@ -46,14 +44,7 @@ export const MediaDownloaderWidget = () => {
     return () => clearTimeout(debounceRef.current);
   }, [url]);
 
-  const fetchLibrary = async () => {
-    try {
-      const res = await axios.get(`http://${window.location.hostname}:8001/api/apps/media_downloader/library`);
-      setLibrary(res.data.files);
-    } catch (e) {}
-  };
-
-  useEffect(() => {
+    useEffect(() => {
     const checkActive = async () => {
       try {
         const res = await axios.get(`http://${window.location.hostname}:8001/api/apps/media_downloader/active`);
@@ -70,10 +61,6 @@ export const MediaDownloaderWidget = () => {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'library') fetchLibrary();
-  }, [activeTab]);
-
-  useEffect(() => {
     let interval: any;
     if (taskId && (!status || (status.status !== 'completed' && status.status !== 'failed' && status.status !== 'cancelled'))) {
       interval = setInterval(async () => {
@@ -83,15 +70,14 @@ export const MediaDownloaderWidget = () => {
           if (res.data.status === 'completed' || res.data.status === 'failed' || res.data.status === 'cancelled') {
             clearInterval(interval);
             setLoading(false);
-            if (activeTab === 'library') fetchLibrary(); 
-          }
+            }
         } catch (e) {
           clearInterval(interval);
         }
       }, 2000);
     }
     return () => clearInterval(interval);
-  }, [taskId, status, activeTab]);
+  }, [taskId, status]);
 
   const handleDownload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,12 +125,9 @@ export const MediaDownloaderWidget = () => {
         </div>
       </div>
 
-      <div className="flex space-x-2 mb-6 border-b border-gray-100 dark:border-gray-700 pb-2">
-        <button onClick={() => setActiveTab('download')} className={`px-4 py-2 font-medium rounded-t-lg ${activeTab === 'download' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}>Download</button>
-        <button onClick={() => setActiveTab('library')} className={`px-4 py-2 font-medium rounded-t-lg ${activeTab === 'library' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}>Local Library</button>
-      </div>
+      
 
-      {activeTab === 'download' ? (
+      
         <form onSubmit={handleDownload} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Spotify or YouTube URL</label>
@@ -327,26 +310,6 @@ export const MediaDownloaderWidget = () => {
             </div>
           )}
         </form>
-      ) : (
-        <div className="space-y-3">
-          {library.length === 0 ? (
-            <div className="text-center py-10 text-gray-500 bg-gray-50 dark:bg-gray-900 rounded-2xl">
-              <FolderOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>No downloaded files yet</p>
-            </div>
-          ) : (
-            library.map((f, i) => (
-              <div key={i} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-blue-200 transition">
-                <div className="flex items-center space-x-3 overflow-hidden">
-                  <CheckCircle className="w-5 h-5 text-blue-500 shrink-0" />
-                  <span className="font-medium text-gray-700 dark:text-gray-200 truncate">{f.name}</span>
-                </div>
-                <span className="text-sm text-gray-500 shrink-0 ml-4">{f.size_mb} MB</span>
-              </div>
-            ))
-          )}
-        </div>
-      )}
     </div>
   );
 };
