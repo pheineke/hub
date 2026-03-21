@@ -41,7 +41,7 @@ export const MediaDownloaderWidget = () => {
         setPreview(null);
       }
       setPreviewLoading(false);
-    }, 700);
+    }, 150);
 
     return () => clearTimeout(debounceRef.current);
   }, [url]);

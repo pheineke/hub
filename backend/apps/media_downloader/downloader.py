@@ -1,5 +1,6 @@
 import os
 import threading
+from functools import lru_cache
 import uuid
 import shutil
 import zipfile
@@ -27,6 +28,7 @@ TEMP_DIR = os.path.join(BASE_DIR, "temp")
 ZIPS_DIR = os.path.join(BASE_DIR, "zips")
 VIDEO_DIR = os.path.join(BASE_DIR, "videos")
 
+@lru_cache(maxsize=1)
 def get_spotipy_client():
     client_id = os.getenv("SPOTIFY_CLIENT_ID")
     client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
@@ -40,6 +42,7 @@ def get_spotipy_client():
 def safe_filename(name: str):
     return "".join(c for c in name if c.isalnum() or c in " ._-").strip()
 
+@lru_cache(maxsize=50)
 def get_preview(url: str):
     if "spotify.com" in url:
         sp = get_spotipy_client()
