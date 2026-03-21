@@ -75,7 +75,7 @@ export function PomodoroWidget() {
     <div className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 max-w-md mx-auto w-full relative">
       <button 
         onClick={() => setShowSettings(!showSettings)}
-        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors z-20"
       >
         <Settings className="w-5 h-5" />
       </button>
@@ -123,8 +123,8 @@ export function PomodoroWidget() {
       </div>
 
       {showSettings && (
-        <div className="absolute inset-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-2xl flex flex-col p-6 z-10">
-          <div className="flex justify-between items-center mb-6">
+        <div className="absolute top-0 left-0 w-full min-h-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 flex flex-col p-6 z-30">
+          <div className="flex justify-between items-center mb-6 shrink-0 mt-2">
             <h3 className="font-bold text-lg">Timer Settings</h3>
             <button onClick={() => setShowSettings(false)} className="text-gray-500 hover:text-gray-700"><X className="w-5 h-5" /></button>
           </div>
