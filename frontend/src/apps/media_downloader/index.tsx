@@ -240,13 +240,15 @@ export const MediaDownloaderWidget = () => {
                   <div className="animate-in fade-in slide-in-from-top-2 duration-200">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">Resolution</label>
                     <div className="flex flex-wrap gap-2">
-                      {[
-                        { val: 'best', label: 'Best' },
-                        { val: '2160', label: '4K' },
-                        { val: '1080', label: '1080p' },
-                        { val: '720', label: '720p' },
-                        { val: '480', label: '480p' }
-                      ].map(res => (
+                      {[{ val: 'best', label: 'Best' }, ...(preview?.resolutions ? preview.resolutions.map((r: string) => ({
+                          val: r, 
+                          label: r === '2160' ? '4K' : r === '1440' ? '1440p' : r === '1080' ? '1080p' : r === '720' ? '720p' : `${r}p`
+                        })) : [
+                          { val: '2160', label: '4K' },
+                          { val: '1080', label: '1080p' },
+                          { val: '720', label: '720p' },
+                          { val: '480', label: '480p' }
+                        ])].map((res) => (
                         <button
                           key={res.val}
                           type="button"

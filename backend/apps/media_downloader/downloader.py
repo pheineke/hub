@@ -71,7 +71,17 @@ def get_preview(url: str):
                 if 'entries' in info: # Playlist
                     return {"type": "youtube", "media_type": "playlist", "title": info.get('title', 'Unknown Playlist'), "author": info.get('uploader', ''), "thumbnail": info.get('thumbnails', [{}])[0].get('url', '') if info.get('thumbnails') else "", "item_count": len(list(info['entries']))}
                 else:
-                    return {"type": "youtube", "media_type": "video", "title": info.get('title', 'Unknown Video'), "author": info.get('uploader', ''), "thumbnail": info.get('thumbnail', ''), "item_count": 1}
+                    # Parse available formats for the given video
+                    formats = info.get('formats', [])
+                    resolutions = set()
+                    for f in formats:
+                        h = f.get('height')
+                        if h and isinstance(h, int) and h >= 144:
+                            resolutions.add(h)
+                    sorted_res = sorted(list(resolutions), reverse=True)
+                    resolutions_str = [str(r) for r in sorted_res]
+                    
+                    return {"type": "youtube", "media_type": "video", "title": info.get('title', 'Unknown Video'), "author": info.get('uploader', ''), "thumbnail": info.get('thumbnail', ''), "item_count": 1, "resolutions": resolutions_str}
         except Exception as e:
             return {"error": str(e)}
     
