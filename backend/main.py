@@ -52,16 +52,61 @@ def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
 
 
 from pydantic import BaseModel
+from typing import Optional, List
+
 class PreferencesUpdate(BaseModel):
     theme: str
     mode: str
+    avatar: Optional[str] = None
+    dashboardOrder: Optional[List[str]] = None
 
 @app.put("/api/users/me/preferences")
 def update_preferences(prefs: PreferencesUpdate, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db)):
-    current_user.preferences = {"theme": prefs.theme, "mode": prefs.mode}
+    updated_prefs = {"theme": prefs.theme, "mode": prefs.mode}
+    if prefs.avatar is not None:
+        updated_prefs["avatar"] = prefs.avatar
+    if prefs.dashboardOrder is not None:
+        updated_prefs["dashboardOrder"] = prefs.dashboardOrder
+        
+    current_user.preferences = updated_prefs
     db.commit()
     db.refresh(current_user)
     return current_user.preferences
+
+
+from fastapi import UploadFile, File
+from fastapi.staticfiles import StaticFiles
+import os
+import shutil
+import uuid
+
+# Create static dir if it doesn't exist
+os.makedirs("static/avatars", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.post("/api/users/me/avatar")
+async def upload_avatar(file: UploadFile = File(...), current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db)):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    file_ext = file.filename.split('.')[-1]
+    filename = f"{uuid.uuid4()}.{file_ext}"
+    filepath = f"static/avatars/{filename}"
+    
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    avatar_url = f"/static/avatars/{filename}"
+    
+    # Update user preferences
+    prefs = current_user.preferences or {"theme": "default", "mode": "dark"}
+    prefs["avatar"] = avatar_url
+    
+    # SQLAlchemy requires this for JSON column updates sometimes
+    current_user.preferences = dict(prefs)
+    db.commit()
+    
+    return {"avatar": avatar_url}
 
 from pydantic import Field
 class PasswordUpdate(BaseModel):

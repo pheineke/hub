@@ -100,9 +100,13 @@ export default function Layout() {
               onClick={() => setSettingsOpen(true)}
               className="flex items-center gap-3 px-4 py-3 mb-2 w-full rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors"
             >
-               <div className="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg">
-                 <UserIcon className="w-5 h-5" />
-               </div>
+{user?.preferences?.avatar ? (
+                 <img src={`http://${window.location.hostname}:8001/static/avatars/${user.preferences.avatar}`} alt="Avatar" className="w-9 h-9 rounded-lg object-cover" />
+               ) : (
+                 <div className="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg">
+                   <UserIcon className="w-5 h-5" />
+                 </div>
+               )}
                <div className="flex-1 min-w-0">
                  <div className="font-medium text-gray-900 dark:text-white truncate">{user.username}</div>
                  <div className="text-xs text-gray-500">Settings</div>

@@ -186,15 +186,21 @@ export const MediaDownloaderWidget = () => {
 
           {preview && preview.type === 'spotify' && (
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Audio Format</label>
-                <select className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500" value={format} onChange={(e) => setFormat(e.target.value)} disabled={loading}>
-                  <option value="mp3">MP3</option>
-                  <option value="flac">FLAC</option>
-                  <option value="m4a">M4A</option>
-                  <option value="wav">WAV</option>
-                  <option value="ogg">OGG</option>
-                </select>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">Audio Format</label>
+                <div className="flex flex-wrap gap-2">
+                  {['mp3', 'flac', 'm4a', 'wav', 'ogg'].map(f => (
+                    <button
+                      key={f}
+                      type="button"
+                      disabled={loading}
+                      onClick={() => setFormat(f)}
+                      className={`flex-1 min-w-[70px] py-2 px-3 rounded-xl text-sm font-medium transition-colors ${format === f ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-transparent hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                    >
+                      {f.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
               </div>
               {preview.item_count > 1 && (
                 <div>
@@ -207,34 +213,54 @@ export const MediaDownloaderWidget = () => {
 
           {preview && preview.type === 'youtube' && (
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Format</label>
-                <select className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500" value={format} onChange={(e) => setFormat(e.target.value)} disabled={loading}>
-                  <optgroup label="Video">
-                    <option value="mp4">MP4 (Video)</option>
-                    <option value="mkv">MKV (Video)</option>
-                  </optgroup>
-                  <optgroup label="Audio Only">
-                    <option value="mp3">MP3 (Audio)</option>
-                    <option value="flac">FLAC (Audio)</option>
-                    <option value="m4a">M4A (Audio)</option>
-                    <option value="wav">WAV (Audio)</option>
-                  </optgroup>
-                </select>
-              </div>
-              {['mp4', 'mkv'].includes(format) && (
+              <div className="col-span-full space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resolution</label>
-                  <select className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-blue-500" value={resolution} onChange={(e) => setResolution(e.target.value)} disabled={loading}>
-                    <option value="best">Highest Available</option>
-                    <option value="2160">4K (2160p)</option>
-                    <option value="1440">1440p</option>
-                    <option value="1080">1080p</option>
-                    <option value="720">720p</option>
-                    <option value="480">480p</option>
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">Format</label>
+                  <div className="flex gap-2">
+                    <button 
+                      type="button" 
+                      disabled={loading}
+                      onClick={() => setFormat('mp4')}
+                      className={`flex-1 py-2 px-4 rounded-xl font-medium transition-colors ${['mp4', 'mkv'].includes(format) ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-transparent hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                    >
+                      Video (MP4)
+                    </button>
+                    <button 
+                      type="button" 
+                      disabled={loading}
+                      onClick={() => setFormat('mp3')}
+                      className={`flex-1 py-2 px-4 rounded-xl font-medium transition-colors ${['mp3', 'm4a', 'wav'].includes(format) ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-transparent hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                    >
+                      Audio (MP3)
+                    </button>
+                  </div>
                 </div>
-              )}
+
+                {['mp4', 'mkv'].includes(format) && (
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">Resolution</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { val: 'best', label: 'Best' },
+                        { val: '2160', label: '4K' },
+                        { val: '1080', label: '1080p' },
+                        { val: '720', label: '720p' },
+                        { val: '480', label: '480p' }
+                      ].map(res => (
+                        <button
+                          key={res.val}
+                          type="button"
+                          disabled={loading}
+                          onClick={() => setResolution(res.val)}
+                          className={`flex-1 min-w-[60px] py-3 px-3 rounded-xl text-sm font-medium transition-colors ${resolution === res.val ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-transparent hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                        >
+                          {res.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

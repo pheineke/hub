@@ -30,7 +30,18 @@ export function PomodoroWidget() {
       }, 1000);
     } else if (timeLeft === 0) {
       setIsActive(false);
-      if (Notification.permission === "granted") {
+      if ("serviceWorker" in navigator && Notification.permission === "granted") {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification("Pomodoro Timer", {
+            body: mode === 'focus' ? "Focus time is over! Take a break." : "Break is over! Time to focus.",
+            icon: '/pwa-192x192.png',
+            requireInteraction: true,
+            // @ts-ignore
+            vibrate: [200, 100, 200, 100, 200, 100, 200],
+            tag: 'pomodoro-timer'
+          });
+        });
+      } else if (Notification.permission === "granted") {
         new Notification("Pomodoro Timer", {
           body: mode === 'focus' ? "Focus time is over! Take a break." : "Break is over! Time to focus.",
         });

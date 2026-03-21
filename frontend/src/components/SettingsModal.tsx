@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, Moon, Sun, Lock, Palette } from 'lucide-react';
+import { X, Moon, Sun, Lock, Palette, User } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import clsx from 'clsx';
 
 export default function SettingsModal({ onClose }: { onClose: () => void }) {
-  const { user, token, setUser } = useStore();
-  const [tab, setTab] = useState<'appearance' | 'security'>('appearance');
+  const { user, token, setUser, uploadAvatar, updateUserPreferences } = useStore();
+  const [tab, setTab] = useState<'profile' | 'appearance' | 'security'>('profile');
 
   // Appearance
   const prefs = user?.preferences || {};
@@ -101,8 +101,16 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="flex border-b border-gray-200 dark:border-gray-700">
+          
+          <button 
+            onClick={() => setTab('profile')}
+            className={clsx("flex-1 p-3 text-sm font-medium flex items-center justify-center gap-2", tab === 'profile' ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400" : "text-gray-500")}
+          >
+            <User className="w-4 h-4" /> Profile
+          </button>
           <button 
             onClick={() => setTab('appearance')}
+
             className={clsx("flex-1 p-3 text-sm font-medium flex items-center justify-center gap-2", tab === 'appearance' ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400" : "text-gray-500")}
           >
             <Palette className="w-4 h-4" /> Appearance
@@ -116,6 +124,46 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="p-6 overflow-y-auto min-h-[400px] flex flex-col">
+          {tab === 'profile' && (
+            <div className="space-y-6 flex flex-col flex-1 items-center justify-center">
+              <div className="w-full flex-1 flex flex-col items-center justify-center gap-4">
+                <div 
+                  className="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 border-4 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden relative group cursor-pointer"
+                  onClick={() => document.getElementById('avatar-upload')?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files[0];
+                    if (file) uploadAvatar(file);
+                  }}
+                >
+                  {user?.preferences?.avatar ? (
+                    <img src={`http://${window.location.hostname}:8001/static/avatars/${user.preferences.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-12 h-12 text-gray-400" />
+                  )}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-white text-xs font-semibold">Upload</span>
+                  </div>
+                  <input 
+                    id="avatar-upload" 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadAvatar(file);
+                    }}
+                  />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-bold dark:text-white">{user?.username}</h3>
+                  <p className="text-sm text-gray-500">Click or drag an image to update avatar</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {tab === 'appearance' && (
             <div className="space-y-6 flex flex-col flex-1">
 

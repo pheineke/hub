@@ -22,6 +22,8 @@ interface HubState {
   uninstallApp: (appId: string) => Promise<void>;
   getAppPreferences: (appId: string) => Promise<any>;
   updateAppPreferences: (appId: string, prefs: any) => Promise<void>;
+  uploadAvatar: (file: File) => Promise<void>;
+  updateUserPreferences: (prefs: any) => Promise<void>;
   syncOfflineQueue: () => Promise<void>;
   logout: () => void;
 }
@@ -153,6 +155,43 @@ export const useStore = create<HubState>((set, get) => ({
       const offlineQueue = JSON.parse(localStorage.getItem('offline_app_prefs') || '{}');
       offlineQueue[appId] = prefs;
       localStorage.setItem('offline_app_prefs', JSON.stringify(offlineQueue));
+    }
+  },
+
+  uploadAvatar: async (file: File) => {
+    const { token, user } = get();
+    if (!token || !user) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await axios.post(`http://${window.location.hostname}:8001/api/users/me/avatar`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      set({ user: { ...user, preferences: { ...user.preferences, avatar: res.data.avatar } } });
+    } catch (e) {
+      console.error('Failed to upload avatar', e);
+    }
+  },
+
+  updateUserPreferences: async (prefs: any) => {
+    const { token, user } = get();
+    if (!token || !user) return;
+    
+    // Optimistic cache update
+    set({ user: { ...user, preferences: { ...user.preferences, ...prefs } }});
+
+    try {
+      await axios.put(`http://${window.location.hostname}:8001/api/users/me/preferences`, prefs, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (e) {
+      console.error('Failed to update user preferences', e);
+      // Revert optimism if needed, but simple for now
     }
   },
 
