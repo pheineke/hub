@@ -2,10 +2,10 @@ import { useStore } from '../store/useStore';
 import { appRegistry } from '../apps/registry';
 import { Link } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
-import { Layers } from 'lucide-react';
+import { Layers, WifiOff } from 'lucide-react';
 
 export default function Dashboard() {
-  const { installedApps } = useStore();
+  const { installedApps, isOnline } = useStore();
 
   if (installedApps.length === 0) {
     return (
@@ -37,8 +37,20 @@ export default function Dashboard() {
             <Link
               key={appId}
               to={`/apps/${appId}`}
-              className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 hover:shadow-md transition-all group"
+              className={`flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 transition-all group relative ${
+                !isOnline && !app.offlineCapable ? 'opacity-60 grayscale hover:ring-0 cursor-not-allowed' : 'hover:ring-2 hover:ring-blue-500 hover:shadow-md'
+              }`}
+              onClick={(e) => {
+                if (!isOnline && !app.offlineCapable) {
+                  e.preventDefault();
+                }
+              }}
             >
+              {!isOnline && !app.offlineCapable && (
+                <div className="absolute top-3 right-3 text-red-500 bg-red-50 dark:bg-red-900/30 p-1.5 rounded-lg" title="Network unavailable">
+                  <WifiOff className="w-4 h-4" />
+                </div>
+              )}
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl mb-4 group-hover:scale-110 transition-transform">
                 <IconComponent className="w-10 h-10" />
               </div>

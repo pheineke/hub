@@ -116,7 +116,7 @@ export const MediaDownloaderWidget = () => {
     if (!taskId) return;
     try {
       await axios.post(`http://${window.location.hostname}:8001/api/apps/media_downloader/cancel/${taskId}`);
-      setStatus(prev => ({ ...prev, status: 'cancelled' }));
+      setStatus((prev: any) => ({ ...prev, status: 'cancelled' }));
       setTaskId(null);
       setLoading(false);
     } catch(e) {}

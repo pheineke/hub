@@ -43,3 +43,26 @@ def uninstall_app(action: AppAction, current_user: models.User = Depends(get_cur
         db.commit()
         return {"message": "Uninstalled"}
     return {"message": "App not found"}
+
+@router.get("/apps/{app_id}/preferences")
+def get_app_preferences(app_id: str, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user_app = db.query(models.UserApp).filter(
+        models.UserApp.user_id == current_user.id,
+        models.UserApp.app_id == app_id
+    ).first()
+    if not user_app:
+        return {}
+    return user_app.preferences or {}
+
+@router.put("/apps/{app_id}/preferences")
+def update_app_preferences(app_id: str, prefs: dict, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user_app = db.query(models.UserApp).filter(
+        models.UserApp.user_id == current_user.id,
+        models.UserApp.app_id == app_id
+    ).first()
+    if not user_app:
+        raise HTTPException(status_code=404, detail="App not installed")
+    
+    user_app.preferences = prefs
+    db.commit()
+    return {"message": "Preferences updated"}

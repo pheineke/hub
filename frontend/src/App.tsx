@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import AppStore from './pages/AppStore';
@@ -16,6 +17,21 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 }
 
 function App() {
+  const setIsOnline = useStore((state) => state.setIsOnline);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [setIsOnline]);
+
   return (
     <BrowserRouter>
       <Routes>
