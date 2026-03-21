@@ -9,6 +9,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
+    preferences = Column(JSON, default={"theme": "default", "mode": "dark"})
 
     installed_apps = relationship("UserApp", back_populates="user")
 

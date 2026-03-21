@@ -3,10 +3,12 @@ import { LayoutDashboard, Library, LogOut, Menu, X, User as UserIcon } from 'luc
 import { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import axios from 'axios';
+import SettingsModal from './SettingsModal';
 import clsx from 'clsx';
 
 export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const location = useLocation();
   const { user, token, setUser, logout, fetchInstalledApps } = useStore();
 
@@ -16,8 +18,22 @@ export default function Layout() {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => {
+
         setUser(res.data);
         fetchInstalledApps();
+        // apply themes
+        if (res.data.preferences) {
+          const { theme, mode } = res.data.preferences;
+          if (mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+          } else {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+          }
+          document.documentElement.setAttribute('data-theme', theme || 'default');
+        }
+
       })
       .catch(err => {
         console.error("Auth failed:", err);
@@ -80,10 +96,18 @@ export default function Layout() {
         
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 shrink-0 space-y-2">
           {user && (
-            <div className="flex items-center gap-3 px-4 py-2 mb-2 text-sm text-gray-500 dark:text-gray-400">
-               <UserIcon className="w-4 h-4" />
-               <span className="font-medium truncate">{user.username}</span>
-            </div>
+            <button 
+              onClick={() => setSettingsOpen(true)}
+              className="flex items-center gap-3 px-4 py-3 mb-2 w-full rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors"
+            >
+               <div className="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg">
+                 <UserIcon className="w-5 h-5" />
+               </div>
+               <div className="flex-1 min-w-0">
+                 <div className="font-medium text-gray-900 dark:text-white truncate">{user.username}</div>
+                 <div className="text-xs text-gray-500">Settings</div>
+               </div>
+            </button>
           )}
           <button 
             onClick={logout}
@@ -106,10 +130,13 @@ export default function Layout() {
            <div className="w-6" /> {/* Spacer */}
         </header>
         
+        
         <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-gray-50 dark:bg-gray-900">
           <Outlet />
         </div>
       </main>
+      
+      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }

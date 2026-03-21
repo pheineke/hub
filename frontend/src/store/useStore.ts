@@ -4,6 +4,7 @@ import axios from 'axios';
 interface User {
   id: number;
   username: string;
+  preferences?: any;
 }
 
 interface HubState {

@@ -48,7 +48,33 @@ def register_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session 
 
 @app.get("/me")
 def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
-    return {"username": current_user.username, "id": current_user.id}
+    return {"username": current_user.username, "id": current_user.id, "preferences": current_user.preferences or {}}
+
+
+from pydantic import BaseModel
+class PreferencesUpdate(BaseModel):
+    theme: str
+    mode: str
+
+@app.put("/api/users/me/preferences")
+def update_preferences(prefs: PreferencesUpdate, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db)):
+    current_user.preferences = {"theme": prefs.theme, "mode": prefs.mode}
+    db.commit()
+    db.refresh(current_user)
+    return current_user.preferences
+
+from pydantic import Field
+class PasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=4)
+
+@app.put("/api/users/me/password")
+def update_password(passwords: PasswordUpdate, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db)):
+    if not auth.verify_password(passwords.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+    current_user.hashed_password = auth.get_password_hash(passwords.new_password)
+    db.commit()
+    return {"message": "Password updated successfully"}
 
 # Registry Hook
 from apps_registry import include_apps
