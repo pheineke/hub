@@ -179,25 +179,57 @@ export const useStore = create<HubState>((set, get) => ({
   },
 
   updateUserPreferences: async (prefs: any) => {
-    const { token, user } = get();
+    const { token, user, isOnline } = get();
     if (!token || !user) return;
     
+    // Create fully merged prefs
+    const mergedPrefs = { ...(user.preferences || {}), ...prefs };
+    
     // Optimistic cache update
-    set({ user: { ...user, preferences: { ...user.preferences, ...prefs } }});
+    set({ user: { ...user, preferences: mergedPrefs } });
+
+    const cachedUserStr = localStorage.getItem('cached_user');
+    if (cachedUserStr) {
+      try {
+        const cachedUser = JSON.parse(cachedUserStr);
+        cachedUser.preferences = mergedPrefs;
+        localStorage.setItem('cached_user', JSON.stringify(cachedUser));
+      } catch (e) {}
+    }
+
+    if (!isOnline) {
+      localStorage.setItem('offline_user_prefs', JSON.stringify(mergedPrefs));
+      return;
+    }
 
     try {
-      await axios.put(`http://${window.location.hostname}:8001/api/users/me/preferences`, prefs, {
+      await axios.put(`http://${window.location.hostname}:8001/api/users/me/preferences`, mergedPrefs, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      // Clear offline queue upon success
+      localStorage.removeItem('offline_user_prefs');
     } catch (e) {
       console.error('Failed to update user preferences', e);
-      // Revert optimism if needed, but simple for now
+      localStorage.setItem('offline_user_prefs', JSON.stringify(mergedPrefs));
     }
   },
 
   syncOfflineQueue: async () => {
     const { token } = get();
     if (!token) return;
+
+    // Sync user preferences
+    const offlineUserPrefs = JSON.parse(localStorage.getItem('offline_user_prefs') || '{}');
+    if (Object.keys(offlineUserPrefs).length > 0) {
+      try {
+        await axios.put(`http://${window.location.hostname}:8001/api/users/me/preferences`, offlineUserPrefs, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        localStorage.removeItem('offline_user_prefs');
+      } catch (e) {
+        console.error('Failed to sync offline user preferences', e);
+      }
+    }
 
     const offlineQueue = JSON.parse(localStorage.getItem('offline_app_prefs') || '{}');
     const appIds = Object.keys(offlineQueue);

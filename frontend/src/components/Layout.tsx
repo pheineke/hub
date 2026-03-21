@@ -18,8 +18,8 @@ export default function Layout() {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => {
-
         setUser(res.data);
+        localStorage.setItem('cached_user', JSON.stringify(res.data));
         fetchInstalledApps();
         // apply themes
         if (res.data.preferences) {
@@ -37,7 +37,24 @@ export default function Layout() {
       })
       .catch(err => {
         console.error("Auth failed:", err);
-        logout();
+        // If it's a network error/offline, use cache instead of logout
+        if (!navigator.onLine || err.message === 'Network Error') {
+          const cached = localStorage.getItem('cached_user');
+          if (cached) {
+            const user = JSON.parse(cached);
+            
+            // Re-apply offline queue edits if they exist
+            const offlineUserPrefs = JSON.parse(localStorage.getItem('offline_user_prefs') || '{}');
+            if (Object.keys(offlineUserPrefs).length > 0) {
+              user.preferences = { ...user.preferences, ...offlineUserPrefs };
+            }
+            
+            setUser(user);
+            fetchInstalledApps();
+          }
+        } else {
+          logout();
+        }
       });
     } else {
       logout();
