@@ -12,7 +12,7 @@ export default function Layout() {
 
   useEffect(() => {
     if (token) {
-      axios.get('http://localhost:8001/me', {
+      axios.get(`http://${window.location.hostname}:8001/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => {

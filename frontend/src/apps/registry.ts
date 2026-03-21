@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { HelloWorldWidget } from './hello_world';
-import { SpotifyDownloaderWidget } from './spotify_downloader';
+import { MediaDownloaderWidget } from './media_downloader';
 
 export interface AppManifest {
   id: string;
@@ -18,11 +18,11 @@ export const appRegistry: Record<string, AppManifest> = {
     icon: 'Sparkles',
     widget: HelloWorldWidget
   },
-  spotify_downloader: {
-    id: 'spotify_downloader',
-    name: 'Spotify Downloader',
-    description: 'Download entire Spotify playlists or albums in highest quality using Odesli/YT.',
-    icon: 'Music',
-    widget: SpotifyDownloaderWidget
+  media_downloader: {
+    id: 'media_downloader',
+    name: 'Media Downloader',
+    description: 'Download Spotify playlists, albums or YouTube videos in highest quality.',
+    icon: 'Download',
+    widget: MediaDownloaderWidget
   }
 };

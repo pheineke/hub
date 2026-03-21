@@ -35,7 +35,7 @@ export const useStore = create<HubState>((set, get) => ({
     const { token } = get();
     if (!token) return;
     try {
-      const res = await axios.get('http://localhost:8001/core/installed', {
+      const res = await axios.get(`http://${window.location.hostname}:8001/core/installed`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       set({ installedApps: res.data });
@@ -52,7 +52,7 @@ export const useStore = create<HubState>((set, get) => ({
       set({ installedApps: [...installedApps, appId] });
     }
     try {
-      await axios.post('http://localhost:8001/core/install', { app_id: appId }, {
+      await axios.post(`http://${window.location.hostname}:8001/core/install`, { app_id: appId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
     } catch (e) {
@@ -67,7 +67,7 @@ export const useStore = create<HubState>((set, get) => ({
     // Optimistic UI update
     set({ installedApps: installedApps.filter(id => id !== appId) });
     try {
-      await axios.post('http://localhost:8001/core/uninstall', { app_id: appId }, {
+      await axios.post(`http://${window.location.hostname}:8001/core/uninstall`, { app_id: appId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
     } catch (e) {
