@@ -68,6 +68,18 @@ export default function Admin() {
     }
   };
 
+
+
+  const handleDeleteUser = async (userId: number, username: string) => {
+    if (!confirm(`Are you sure you want to permanently delete the user '${username}'?`)) return;
+    try {
+      await axios.delete(`/api/admin/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Failed to delete user');
+    }
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Admin Dashboard</h1>
@@ -146,9 +158,14 @@ export default function Admin() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{u.downloaded_today_mb}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{u.daily_download_limit_mb}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button onClick={() => handleUpdateLimit(u.id, u.daily_download_limit_mb)} className="text-blue-600 hover:text-blue-900">
-                    Edit Limit
-                  </button>
+                  <div className="flex space-x-3">
+                    <button onClick={() => handleUpdateLimit(u.id, u.daily_download_limit_mb)} className="text-blue-600 hover:text-blue-900">
+                      Edit Limit
+                    </button>
+                    <button onClick={() => handleDeleteUser(u.id, u.username)} className="text-red-600 hover:text-red-900">
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

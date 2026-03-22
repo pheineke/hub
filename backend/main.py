@@ -173,6 +173,32 @@ def admin_update_user_limit(user_id: int, limit_data: AdminUserLimitUpdate, curr
     user.daily_download_limit_mb = limit_data.daily_download_limit_mb
     db.commit()
     return {"message": "Limit updated successfully"}
+
+@app.delete("/api/admin/users/{user_id}")
+def admin_delete_user(user_id: int, current_admin: models.User = Depends(auth.get_admin_user), db: Session = Depends(database.get_db)):
+    if current_admin.id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db.query(models.UserApp).filter(models.UserApp.user_id == user_id).delete()
+    db.delete(user)
+    db.commit()
+    return {"message": "User deleted successfully"}
+
+@app.delete("/api/admin/users/{user_id}")
+def admin_delete_user(user_id: int, current_admin: models.User = Depends(auth.get_admin_user), db: Session = Depends(database.get_db)):
+    if current_admin.id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db.query(models.UserApp).filter(models.UserApp.user_id == user_id).delete()
+    db.delete(user)
+    db.commit()
+    return {"message": "User deleted successfully"}
 # --------------------
 
 # Registry Hook
