@@ -10,6 +10,7 @@ export const MediaDownloaderWidget = () => {
   const [limit, setLimit] = useState<number | ''>(''); // Spotify specific
   
   const [preview, setPreview] = useState<any>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   
   const [taskId, setTaskId] = useState<string | null>(null);
@@ -24,19 +25,22 @@ export const MediaDownloaderWidget = () => {
     
     if (!url || (!url.includes('spotify.com') && !url.includes('youtube.com') && !url.includes('youtu.be'))) {
       setPreview(null);
+      setPreviewError(null);
       return;
     }
 
     setPreviewLoading(true);
+    setPreviewError(null);
     debounceRef.current = setTimeout(async () => {
       try {
         const res = await axios.post(`/api/apps/media_downloader/preview`, { url });
         setPreview(res.data);
         if (res.data.type === 'youtube') setFormat('mp4');
         else if (res.data.type === 'spotify') setFormat('mp3');
-      } catch (e) {
+      } catch (e: any) {
         console.error("Preview failed", e);
         setPreview(null);
+        setPreviewError(e.response?.data?.detail || "Failed to load preview");
       }
       setPreviewLoading(false);
     }, 150);
@@ -156,6 +160,12 @@ export const MediaDownloaderWidget = () => {
 
           {previewLoading && <div className="text-sm text-gray-500 animate-pulse">Loading preview...</div>}
           
+          {previewError && !previewLoading && (
+            <div className="p-3 my-2 text-sm text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-800">
+              {previewError}
+            </div>
+          )}
+
           {preview && !previewLoading && (
             <div className="flex items-center p-3 my-2 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
                {preview.thumbnail && <img src={preview.thumbnail} alt="cover" className="w-16 h-16 object-cover rounded-lg mr-4 bg-gray-200" />}
@@ -249,7 +259,7 @@ export const MediaDownloaderWidget = () => {
             </div>
           )}
 
-          <button type="submit" disabled={loading || (!url)} className="w-full flex items-center justify-center p-3 mt-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 transition">
+          <button type="submit" disabled={loading || (!url) || !!previewError} className="w-full flex items-center justify-center p-3 mt-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 transition">
             {loading ? <RefreshCcw className="w-5 h-5 animate-spin mr-2" /> : <Download className="w-5 h-5 mr-2" />}
             {loading ? 'Processing...' : 'Start Download'}
           </button>
