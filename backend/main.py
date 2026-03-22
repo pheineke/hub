@@ -1,4 +1,5 @@
 import fastapi
+import os
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -34,9 +35,27 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+ALLOW_REGISTRATION = os.getenv("ALLOW_REGISTRATION", "false").lower() == "true"
+
 @app.post("/register")
-def register_user():
-    raise HTTPException(status_code=403, detail="Public registration is disabled. Please contact an administrator.")
+def register_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
+    if not ALLOW_REGISTRATION:
+        raise HTTPException(status_code=403, detail="Public registration is disabled. Please contact an administrator.")
+    
+    user = auth.get_user(db, username=form_data.username)
+    if user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+        
+    hashed_password = auth.get_password_hash(form_data.password)
+    db_user = models.User(username=form_data.username, hashed_password=hashed_password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return {"message": "User created successfully"}
+
+@app.get("/config")
+def get_config():
+    return {"allow_registration": ALLOW_REGISTRATION}
 
 @app.get("/me")
 def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
@@ -201,6 +220,12 @@ def admin_delete_user(user_id: int, current_admin: models.User = Depends(auth.ge
     return {"message": "User deleted successfully"}
 # --------------------
 
+from apps_registry import include_apps
+from routers_core import router as core_router
+app.include_router(core_router)
+from apps_registry import include_apps
+include_apps(app)
+
 # Registry Hook
 from fastapi.responses import FileResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -215,10 +240,6 @@ async def catch_all(request, exc: StarletteHTTPException):
         return FileResponse(f"../frontend/dist{request.url.path}")
     return FileResponse("../frontend/dist/index.html")
 
-app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="frontend")
 
-from apps_registry import include_apps
-from routers_core import router as core_router
-app.include_router(core_router)
-from apps_registry import include_apps
-include_apps(app)
+
+app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="frontend")

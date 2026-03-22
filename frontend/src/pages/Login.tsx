@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useStore } from '../store/useStore';
@@ -8,8 +8,15 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [allowRegistration, setAllowRegistration] = useState(false);
   const navigate = useNavigate();
   const setToken = useStore((state) => state.setToken);
+
+  useEffect(() => {
+    axios.get(`/config`).then(res => {
+      setAllowRegistration(res.data.allow_registration);
+    }).catch(err => console.error('Failed to fetch config', err));
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,11 +86,13 @@ export default function Login() {
             </button>
           </div>
         </form>
-        <div className="text-center mt-4">
-          <Link to="/register" className="text-sm font-medium text-blue-600 hover:text-blue-500">
-            Don't have an account? Register here
-          </Link>
-        </div>
+        {allowRegistration && (
+          <div className="text-center mt-4">
+            <Link to="/register" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+              Don't have an account? Register here
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ services:
       - ./downloads:/app/backend/library/media_downloader
     environment:
       - PORT=9919
+      - ALLOW_REGISTRATION=false
       - SECRET_KEY=your_secure_random_production_secret_here
       - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID:-}
       - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET:-}
