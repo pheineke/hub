@@ -5,6 +5,28 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hub</title>
+      <script>
+      try {
+        const cached = localStorage.getItem('cached_user');
+        let mode = 'system';
+        let theme = 'default';
+        if (cached) {
+          const user = JSON.parse(cached);
+          if (user && user.preferences) {
+            mode = user.preferences.mode || mode;
+            theme = user.preferences.theme || theme;
+          }
+        }
+        if (mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        } else {
+          document.documentElement.classList.add('light');
+          document.documentElement.classList.remove('dark');
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
