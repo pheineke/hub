@@ -14,8 +14,8 @@ export default defineConfig({
         name: 'Hub App',
         short_name: 'Hub',
         description: 'Hub Platform with Offline Capabilities',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
+        theme_color: '#111827',
+        background_color: '#111827',
         display: 'standalone',
         start_url: '/',
         icons: [
