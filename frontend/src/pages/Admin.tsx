@@ -85,14 +85,23 @@ export default function Admin() {
             onChange={e => setNewUsername(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-transparent dark:text-white"
           />
-          <input
-            type="text"
-            required
-            placeholder="One-Time Password"
-            value={newPassword}
-            onChange={e => setNewPassword(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-transparent dark:text-white"
-          />
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              required
+              placeholder="One-Time Password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-transparent dark:text-white"
+            />
+            <button 
+              type="button" 
+              onClick={() => setNewPassword(Math.random().toString(36).slice(-8))}
+              className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 whitespace-nowrap"
+            >
+              Generate
+            </button>
+          </div>
           <input
             type="number"
             required
@@ -129,7 +138,7 @@ export default function Admin() {
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {users.map(u => (
+            {(Array.isArray(users) ? users : []).map(u => (
               <tr key={u.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{u.username}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{u.is_admin ? 'Admin' : 'User'}</td>
