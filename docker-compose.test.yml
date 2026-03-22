@@ -15,6 +15,4 @@ services:
       - PORT=9929
       - ALLOW_REGISTRATION=true
       - SECRET_KEY=test_secure_random_secret_here
-      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID:-}
-      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET:-}
     restart: unless-stopped
