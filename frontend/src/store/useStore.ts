@@ -5,6 +5,10 @@ interface User {
   id: number;
   username: string;
   preferences?: any;
+  is_admin?: boolean;
+  requires_password_change?: boolean;
+  daily_download_limit_mb?: number;
+  downloaded_today_mb?: number;
 }
 
 interface HubState {

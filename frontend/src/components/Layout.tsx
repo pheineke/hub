@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Library, LogOut, Menu, X, User as UserIcon } from 'lucide-react';
+import { LayoutDashboard, Library, LogOut, Menu, X, User as UserIcon, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import axios from 'axios';
@@ -65,6 +65,10 @@ export default function Layout() {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'App Store', href: '/store', icon: Library },
   ];
+
+  if (user?.is_admin) {
+    navigation.push({ name: 'Admin', href: '/admin', icon: Shield });
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">

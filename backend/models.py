@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, JSON, Date
 from sqlalchemy.orm import relationship
 from database import Base
+import datetime
 
 class User(Base):
     __tablename__ = "users"
@@ -10,6 +11,12 @@ class User(Base):
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
     preferences = Column(JSON, default={"theme": "default", "mode": "dark"})
+    
+    is_admin = Column(Boolean, default=False)
+    requires_password_change = Column(Boolean, default=False)
+    daily_download_limit_mb = Column(Integer, default=30000)
+    downloaded_today_mb = Column(Integer, default=0)
+    last_download_reset = Column(Date, default=datetime.date.today)
 
     installed_apps = relationship("UserApp", back_populates="user")
 

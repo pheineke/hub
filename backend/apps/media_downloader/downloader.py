@@ -309,7 +309,7 @@ class SpotifyDownloader(BaseDownloader):
         self.zip_files()
 
 
-def start_download_task(req_data: dict) -> str:
+def start_download_task(req_data: dict, user_id: int = None) -> str:
     task_id = str(uuid.uuid4())
     DOWNLOAD_TASKS[task_id] = {
         "id": task_id,
@@ -333,6 +333,43 @@ def start_download_task(req_data: dict) -> str:
         DOWNLOAD_TASKS[task_id]["error"] = "Unsupported URL"
         return task_id
         
-    t = threading.Thread(target=dl.run)
+    def run_and_log():
+        try:
+            dl.run()
+        finally:
+            if user_id:
+                # Calculate size of downloaded files
+                total_size_bytes = 0
+                for f in DOWNLOAD_TASKS[task_id].get("files", []):
+                    try:
+                        if os.path.exists(f):
+                            total_size_bytes += os.path.getsize(f)
+                    except:
+                        pass
+                if total_size_bytes > 0:
+                    mb_used = max(1, total_size_bytes // (1024 * 1024))
+                    try:
+                        import sys
+                        sys.path.append("/home/pi/hub/backend")
+                        from database import SessionLocal
+                        from models import User
+                        from datetime import date
+                        
+                        db = SessionLocal()
+                        user = db.query(User).filter(User.id == user_id).first()
+                        if user:
+                            # Reset if new day
+                            if user.last_download_reset != date.today():
+                                user.downloaded_today_mb = 0
+                                user.last_download_reset = date.today()
+                            if user.downloaded_today_mb is None:
+                                user.downloaded_today_mb = 0
+                            user.downloaded_today_mb += mb_used
+                            db.commit()
+                        db.close()
+                    except Exception as e:
+                        print("Error updating user limit:", e)
+                        
+    t = threading.Thread(target=run_and_log)
     t.start()
     return task_id

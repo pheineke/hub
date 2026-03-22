@@ -6,15 +6,34 @@ import AppStore from './pages/AppStore';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AppView from './pages/AppView';
+import ChangePassword from './pages/ChangePassword';
+import Admin from './pages/Admin';
 import { useStore } from './store/useStore';
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const token = useStore((state) => state.token);
+  const user = useStore((state) => state.user);
   if (!token) {
     return <Navigate to="/login" replace />;
   }
+  if (user?.requires_password_change) {
+    return <Navigate to="/change-password" replace />;
+  }
   return children;
 }
+
+function AdminRoute({ children }: { children: JSX.Element }) {
+  const token = useStore((state) => state.token);
+  const user = useStore((state) => state.user);
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!user?.is_admin) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
 
 function App() {
   const setIsOnline = useStore((state) => state.setIsOnline);
@@ -37,6 +56,17 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/change-password" element={<ChangePassword />} />
+        <Route 
+          path="/admin" 
+          element={
+            <AdminRoute>
+              <Layout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<Admin />} />
+        </Route>
         <Route 
           path="/" 
           element={

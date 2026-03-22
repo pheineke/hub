@@ -48,7 +48,15 @@ def register_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session 
 
 @app.get("/me")
 def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
-    return {"username": current_user.username, "id": current_user.id, "preferences": current_user.preferences or {}}
+    return {
+        "username": current_user.username, 
+        "id": current_user.id, 
+        "preferences": current_user.preferences or {},
+        "is_admin": current_user.is_admin,
+        "requires_password_change": current_user.requires_password_change,
+        "daily_download_limit_mb": current_user.daily_download_limit_mb,
+        "downloaded_today_mb": current_user.downloaded_today_mb
+    }
 
 
 from pydantic import BaseModel
@@ -118,8 +126,62 @@ def update_password(passwords: PasswordUpdate, current_user: models.User = Depen
     if not auth.verify_password(passwords.current_password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect current password")
     current_user.hashed_password = auth.get_password_hash(passwords.new_password)
+    current_user.requires_password_change = False
     db.commit()
     return {"message": "Password updated successfully"}
+
+
+# --- Admin Routes ---
+class AdminUserCreate(BaseModel):
+    username: str
+    password: str
+    is_admin: bool = False
+    daily_download_limit_mb: int = 30000
+
+class AdminUserLimitUpdate(BaseModel):
+    daily_download_limit_mb: int
+
+@app.get("/api/admin/users")
+def get_all_users(current_admin: models.User = Depends(auth.get_admin_user), db: Session = Depends(database.get_db)):
+    users = db.query(models.User).all()
+    return [
+        {
+            "id": u.id,
+            "username": u.username,
+            "is_admin": u.is_admin,
+            "requires_password_change": u.requires_password_change,
+            "daily_download_limit_mb": u.daily_download_limit_mb,
+            "downloaded_today_mb": u.downloaded_today_mb
+        } for u in users
+    ]
+
+@app.post("/api/admin/users")
+def admin_create_user(user_data: AdminUserCreate, current_admin: models.User = Depends(auth.get_admin_user), db: Session = Depends(database.get_db)):
+    existing = auth.get_user(db, username=user_data.username)
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    hashed_password = auth.get_password_hash(user_data.password)
+    new_user = models.User(
+        username=user_data.username,
+        hashed_password=hashed_password,
+        is_admin=user_data.is_admin,
+        requires_password_change=True,
+        daily_download_limit_mb=user_data.daily_download_limit_mb
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"message": "User created", "id": new_user.id}
+
+@app.put("/api/admin/users/{user_id}/limit")
+def admin_update_user_limit(user_id: int, limit_data: AdminUserLimitUpdate, current_admin: models.User = Depends(auth.get_admin_user), db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.daily_download_limit_mb = limit_data.daily_download_limit_mb
+    db.commit()
+    return {"message": "Limit updated successfully"}
+# --------------------
 
 # Registry Hook
 from apps_registry import include_apps
