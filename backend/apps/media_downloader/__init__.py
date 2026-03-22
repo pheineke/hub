@@ -57,7 +57,7 @@ def get_active(current_user: User = Depends(get_current_user)):
     return {"active": active}
 
 @router.get("/zip/{task_id}")
-def get_zip(task_id: str, current_user: User = Depends(get_current_user)):
+def get_zip(task_id: str):
     if task_id not in DOWNLOAD_TASKS:
         raise HTTPException(status_code=404, detail="Task not found")
     
