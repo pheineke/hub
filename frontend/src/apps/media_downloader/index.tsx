@@ -93,7 +93,8 @@ export const MediaDownloaderWidget = () => {
         url,
         format,
         resolution,
-        limit: limit === '' ? 0 : Number(limit)
+        limit: limit === '' ? 0 : Number(limit),
+        title: preview?.title || 'media_bundle'
       });
       setTaskId(res.data.task_id);
     } catch (err: any) {
@@ -158,7 +159,16 @@ export const MediaDownloaderWidget = () => {
             </div>
           </div>
 
-          {previewLoading && <div className="text-sm text-gray-500 animate-pulse">Loading preview...</div>}
+          {previewLoading && (
+            <div className="flex items-center p-3 my-2 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 h-[90px]">
+              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg mr-4"></div>
+              <div className="flex flex-col flex-1 space-y-2">
+                <div className="w-20 h-3 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
+                <div className="w-48 h-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
+                <div className="w-32 h-3 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
+              </div>
+            </div>
+          )}
           
           {previewError && !previewLoading && (
             <div className="p-3 my-2 text-sm text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-800">

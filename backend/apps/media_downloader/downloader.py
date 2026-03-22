@@ -22,7 +22,7 @@ load_dotenv()
 
 DOWNLOAD_TASKS: Dict[str, Dict[str, Any]] = {}
 
-BASE_DIR = "/home/pi/hub/backend/library/media_downloader"
+BASE_DIR = os.getenv("MEDIA_DOWNLOADER_DIR", "/app/backend/library/media_downloader")
 LIBRARY_DIR = os.path.join(BASE_DIR, "music")
 TEMP_DIR = os.path.join(BASE_DIR, "temp")
 ZIPS_DIR = os.path.join(BASE_DIR, "zips")
@@ -45,6 +45,7 @@ def safe_filename(name: str):
 @lru_cache(maxsize=50)
 def get_preview(url: str):
     if "spotify.com" in url:
+        if "?" in url: url = url.split("?")[0]
         sp = get_spotipy_client()
         if not sp:
             return {"error": "Spotify credentials not configured"}
@@ -320,7 +321,8 @@ def start_download_task(req_data: dict, user_id: int = None) -> str:
         "files": [],
         "skipped_tracks": [],
         "zip_path": None,
-        "error": None
+        "error": None,
+        "title": req_data.get("title", "")
     }
     
     url = req_data.get('url', '')

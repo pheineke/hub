@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from fastapi.responses import FileResponse
@@ -18,6 +19,7 @@ class DownloadRequest(BaseModel):
     format: str = "mp3"
     resolution: str = "1080"
     limit: int = 0
+    title: Optional[str] = None
 
 class PreviewRequest(BaseModel):
     url: str
@@ -65,7 +67,11 @@ def get_zip(task_id: str):
     if not zip_path or not os.path.exists(zip_path):
         raise HTTPException(status_code=404, detail="Zip file not ready or not found")
         
-    return FileResponse(zip_path, media_type="application/zip", filename=f"media_bundle_{task_id[:8]}.zip")
+    title = DOWNLOAD_TASKS[task_id].get("title") or "media_bundle"
+    import re as regex
+    safe_title = regex.sub(r'[^a-zA-Z0-9_\- ]', '', title).strip().replace(' ', '_')
+    if not safe_title: safe_title = "media_bundle"
+    return FileResponse(zip_path, media_type="application/zip", filename=f"{safe_title}_{task_id[:6]}.zip")
 
 @router.get("/status/{task_id}")
 def check_status(task_id: str, current_user: User = Depends(get_current_user)):
