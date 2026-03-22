@@ -9,6 +9,8 @@ services:
       - ./backend/hub.db:/app/backend/hub.db
       - ./backend/static:/app/backend/static
       - ./downloads:/app/backend/library/media_downloader
+    env_file:
+      - ./backend/.env
     environment:
       - PORT=9919
       - ALLOW_REGISTRATION=false

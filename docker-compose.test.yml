@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "9929:9929"
+    volumes:
+      - ./backend/hub_test.db:/app/backend/hub.db
+      - ./backend/static_test:/app/backend/static
+      - ./downloads_test:/app/backend/library/media_downloader
+    env_file:
+      - ./backend/.env
+    environment:
+      - PORT=9929
+      - ALLOW_REGISTRATION=true
+      - SECRET_KEY=test_secure_random_secret_here
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID:-}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET:-}
+    restart: unless-stopped
