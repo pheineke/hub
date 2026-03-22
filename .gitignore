@@ -22,3 +22,5 @@ frontend/*.local
 # OS Files
 .DS_Store
 Thumbs.db
+downloads/
+downloads_test/
