@@ -24,14 +24,14 @@ export default function ChangePassword() {
 
     setLoading(true);
     try {
-      await axios.put(`http://${window.location.hostname}:8001/api/users/me/password`, {
+      await axios.put(`/api/users/me/password`, {
         current_password: currentPassword,
         new_password: newPassword
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Update user state so requires_password_change is false
-      const res = await axios.get(`http://${window.location.hostname}:8001/me`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get(`/me`, { headers: { Authorization: `Bearer ${token}` } });
       setUser(res.data);
       navigate('/');
     } catch (err: any) {

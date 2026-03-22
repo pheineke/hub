@@ -1,3 +1,4 @@
+import fastapi
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -34,17 +35,8 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/register")
-def register_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
-    user = auth.get_user(db, username=form_data.username)
-    if user:
-        raise HTTPException(status_code=400, detail="Username already registered")
-    
-    hashed_password = auth.get_password_hash(form_data.password)
-    db_user = models.User(username=form_data.username, hashed_password=hashed_password)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return {"message": "User created successfully"}
+def register_user():
+    raise HTTPException(status_code=403, detail="Public registration is disabled. Please contact an administrator.")
 
 @app.get("/me")
 def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
@@ -184,6 +176,21 @@ def admin_update_user_limit(user_id: int, limit_data: AdminUserLimitUpdate, curr
 # --------------------
 
 # Registry Hook
+from fastapi.responses import FileResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+# SPA Catch-all route to serve index.html for React Router
+@app.exception_handler(404)
+async def catch_all(request, exc: StarletteHTTPException):
+    if request.url.path.startswith("/api/") or request.url.path.startswith("/core/") or request.url.path.startswith("/me") or request.url.path.startswith("/token") or request.url.path.startswith("/register") or request.url.path.startswith("/static/"):
+        return fastapi.responses.JSONResponse({"detail": "Not Found"}, status_code=404)
+    # Check if a static file exists (like an asset), if not, fallback to index
+    if os.path.exists(f"../frontend/dist{request.url.path}") and "." in request.url.path.split("/")[-1]:
+        return FileResponse(f"../frontend/dist{request.url.path}")
+    return FileResponse("../frontend/dist/index.html")
+
+app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="frontend")
+
 from apps_registry import include_apps
 from routers_core import router as core_router
 app.include_router(core_router)

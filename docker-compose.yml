@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "9919:9919"
+    volumes:
+      - ./backend/hub.db:/app/backend/hub.db
+      - ./backend/static:/app/backend/static
+      - ./downloads:/app/backend/library/media_downloader
+    environment:
+      - PORT=9919
+      - SECRET_KEY=your_secure_random_production_secret_here
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID:-}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET:-}
+    restart: unless-stopped

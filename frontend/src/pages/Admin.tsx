@@ -23,7 +23,7 @@ export default function Admin() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(`http://${window.location.hostname}:8001/api/admin/users`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get(`/api/admin/users`, { headers: { Authorization: `Bearer ${token}` } });
       setUsers(res.data);
     } catch (err) {
       console.error(err);
@@ -39,7 +39,7 @@ export default function Admin() {
     setError('');
     setSuccess('');
     try {
-      await axios.post(`http://${window.location.hostname}:8001/api/admin/users`, {
+      await axios.post(`/api/admin/users`, {
         username: newUsername,
         password: newPassword,
         daily_download_limit_mb: newLimit,
@@ -59,7 +59,7 @@ export default function Admin() {
     const lim = prompt('Enter new daily download limit in MB:', String(currentLimit));
     if (!lim || isNaN(Number(lim))) return;
     try {
-      await axios.put(`http://${window.location.hostname}:8001/api/admin/users/${userId}/limit`, {
+      await axios.put(`/api/admin/users/${userId}/limit`, {
         daily_download_limit_mb: Number(lim)
       }, { headers: { Authorization: `Bearer ${token}` } });
       fetchUsers();

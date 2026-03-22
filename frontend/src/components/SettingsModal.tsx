@@ -30,7 +30,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
     const savePrefs = async () => {
       try {
         const res = await axios.put(
-          `http://${window.location.hostname}:8001/api/users/me/preferences`,
+          `/api/users/me/preferences`,
           { theme, mode },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -77,7 +77,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
     }
     try {
       await axios.put(
-        `http://${window.location.hostname}:8001/api/users/me/password`,
+        `/api/users/me/password`,
         { current_password: currentPassword, new_password: newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -138,7 +138,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                   }}
                 >
                   {user?.preferences?.avatar ? (
-                    <img src={`http://${window.location.hostname}:8001/static/avatars/${user.preferences.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
+                    <img src={`/static/avatars/${user.preferences.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-12 h-12 text-gray-400" />
                   )}

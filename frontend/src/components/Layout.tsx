@@ -14,7 +14,7 @@ export default function Layout() {
 
   useEffect(() => {
     if (token) {
-      axios.get(`http://${window.location.hostname}:8001/me`, {
+      axios.get(`/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => {
@@ -122,7 +122,7 @@ export default function Layout() {
               className="flex items-center gap-3 px-4 py-3 mb-2 w-full rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors"
             >
 {user?.preferences?.avatar ? (
-                 <img src={`http://${window.location.hostname}:8001/static/avatars/${user.preferences.avatar}`} alt="Avatar" className="w-9 h-9 rounded-lg object-cover" />
+                 <img src={`/static/avatars/${user.preferences.avatar}`} alt="Avatar" className="w-9 h-9 rounded-lg object-cover" />
                ) : (
                  <div className="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg">
                    <UserIcon className="w-5 h-5" />

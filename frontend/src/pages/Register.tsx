@@ -17,7 +17,7 @@ export default function Register() {
         const formData = new URLSearchParams();
         formData.append('username', username);
         formData.append('password', password);
-        await axios.post(`http://${window.location.hostname}:8001/register`, formData, {
+        await axios.post(`/register`, formData, {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
             },

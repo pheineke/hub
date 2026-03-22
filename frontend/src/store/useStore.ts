@@ -65,7 +65,7 @@ export const useStore = create<HubState>((set, get) => ({
       return;
     }
     try {
-      const res = await axios.get(`http://${window.location.hostname}:8001/core/installed`, {
+      const res = await axios.get(`/core/installed`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       set({ installedApps: res.data });
@@ -82,7 +82,7 @@ export const useStore = create<HubState>((set, get) => ({
       set({ installedApps: [...installedApps, appId] });
     }
     try {
-      await axios.post(`http://${window.location.hostname}:8001/core/install`, { app_id: appId }, {
+      await axios.post(`/core/install`, { app_id: appId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
     } catch (e) {
@@ -96,7 +96,7 @@ export const useStore = create<HubState>((set, get) => ({
     if (!token || !isOnline) return; // Disallow uninstall when offline
     set({ installedApps: installedApps.filter(id => id !== appId) });
     try {
-      await axios.post(`http://${window.location.hostname}:8001/core/uninstall`, { app_id: appId }, {
+      await axios.post(`/core/uninstall`, { app_id: appId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
     } catch (e) {
@@ -124,7 +124,7 @@ export const useStore = create<HubState>((set, get) => ({
     }
 
     try {
-      const res = await axios.get(`http://${window.location.hostname}:8001/core/apps/${appId}/preferences`, {
+      const res = await axios.get(`/core/apps/${appId}/preferences`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       set({ appPreferences: { ...get().appPreferences, [appId]: res.data }});
@@ -151,7 +151,7 @@ export const useStore = create<HubState>((set, get) => ({
     if (!token) return;
 
     try {
-      await axios.put(`http://${window.location.hostname}:8001/core/apps/${appId}/preferences`, prefs, {
+      await axios.put(`/core/apps/${appId}/preferences`, prefs, {
         headers: { Authorization: `Bearer ${token}` }
       });
     } catch (e) {
@@ -170,7 +170,7 @@ export const useStore = create<HubState>((set, get) => ({
     formData.append('file', file);
 
     try {
-      const res = await axios.post(`http://${window.location.hostname}:8001/api/users/me/avatar`, formData, {
+      const res = await axios.post(`/api/users/me/avatar`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -207,7 +207,7 @@ export const useStore = create<HubState>((set, get) => ({
     }
 
     try {
-      await axios.put(`http://${window.location.hostname}:8001/api/users/me/preferences`, mergedPrefs, {
+      await axios.put(`/api/users/me/preferences`, mergedPrefs, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Clear offline queue upon success
@@ -226,7 +226,7 @@ export const useStore = create<HubState>((set, get) => ({
     const offlineUserPrefs = JSON.parse(localStorage.getItem('offline_user_prefs') || '{}');
     if (Object.keys(offlineUserPrefs).length > 0) {
       try {
-        await axios.put(`http://${window.location.hostname}:8001/api/users/me/preferences`, offlineUserPrefs, {
+        await axios.put(`/api/users/me/preferences`, offlineUserPrefs, {
           headers: { Authorization: `Bearer ${token}` }
         });
         localStorage.removeItem('offline_user_prefs');
@@ -242,7 +242,7 @@ export const useStore = create<HubState>((set, get) => ({
 
     for (const appId of appIds) {
       try {
-        await axios.put(`http://${window.location.hostname}:8001/core/apps/${appId}/preferences`, offlineQueue[appId], {
+        await axios.put(`/core/apps/${appId}/preferences`, offlineQueue[appId], {
           headers: { Authorization: `Bearer ${token}` }
         });
         delete offlineQueue[appId];

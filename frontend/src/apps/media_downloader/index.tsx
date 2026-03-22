@@ -30,7 +30,7 @@ export const MediaDownloaderWidget = () => {
     setPreviewLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await axios.post(`http://${window.location.hostname}:8001/api/apps/media_downloader/preview`, { url });
+        const res = await axios.post(`/api/apps/media_downloader/preview`, { url });
         setPreview(res.data);
         if (res.data.type === 'youtube') setFormat('mp4');
         else if (res.data.type === 'spotify') setFormat('mp3');
@@ -47,7 +47,7 @@ export const MediaDownloaderWidget = () => {
     useEffect(() => {
     const checkActive = async () => {
       try {
-        const res = await axios.get(`http://${window.location.hostname}:8001/api/apps/media_downloader/active`);
+        const res = await axios.get(`/api/apps/media_downloader/active`);
         const activeTasks = Object.keys(res.data.active);
         if (activeTasks.length > 0) {
           const lastActiveId = activeTasks[0];
@@ -65,7 +65,7 @@ export const MediaDownloaderWidget = () => {
     if (taskId && (!status || (status.status !== 'completed' && status.status !== 'failed' && status.status !== 'cancelled'))) {
       interval = setInterval(async () => {
         try {
-          const res = await axios.get(`http://${window.location.hostname}:8001/api/apps/media_downloader/status/${taskId}`);
+          const res = await axios.get(`/api/apps/media_downloader/status/${taskId}`);
           setStatus(res.data);
           if (res.data.status === 'completed' || res.data.status === 'failed' || res.data.status === 'cancelled') {
             clearInterval(interval);
@@ -85,7 +85,7 @@ export const MediaDownloaderWidget = () => {
     try {
       setLoading(true);
       setStatus(null);
-      const res = await axios.post(`http://${window.location.hostname}:8001/api/apps/media_downloader/download`, {
+      const res = await axios.post(`/api/apps/media_downloader/download`, {
         url,
         format,
         resolution,
@@ -101,7 +101,7 @@ export const MediaDownloaderWidget = () => {
   const handleCancel = async () => {
     if (!taskId) return;
     try {
-      await axios.post(`http://${window.location.hostname}:8001/api/apps/media_downloader/cancel/${taskId}`);
+      await axios.post(`/api/apps/media_downloader/cancel/${taskId}`);
       setStatus((prev: any) => ({ ...prev, status: 'cancelled' }));
       setTaskId(null);
       setLoading(false);
@@ -281,7 +281,7 @@ export const MediaDownloaderWidget = () => {
                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-blue-600 dark:text-blue-400 font-medium mb-3">Download complete! Your file is ready.</p>
                   <div className="flex space-x-3">
-                    <a href={`http://${window.location.hostname}:8001/api/apps/media_downloader/zip/${taskId}`} download className="flex-1 flex items-center justify-center p-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition">
+                    <a href={`/api/apps/media_downloader/zip/${taskId}`} download className="flex-1 flex items-center justify-center p-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition">
                       <Download className="w-5 h-5 mr-2" /> Save ZIP to Device
                     </a>
                     <button type="button" onClick={() => { setTaskId(null); setStatus(null); }} className="px-4 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition">
