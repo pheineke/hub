@@ -1,3 +1,4 @@
+import { GymTrackerWidget } from './gym_tracker';
 import { ReactNode } from 'react';
 import { HelloWorldWidget } from './hello_world';
 import { MediaDownloaderWidget } from './media_downloader';
@@ -28,6 +29,14 @@ export const appRegistry: Record<string, AppManifest> = {
     icon: 'Download',
     offlineCapable: false,
     widget: MediaDownloaderWidget
+  },
+  gym_tracker: {
+    id: 'gym_tracker',
+    name: 'Gym Tracker',
+    description: 'Track your gym progress, reps, and weights across different machines and activities.',
+    icon: 'Dumbbell',
+    offlineCapable: false,
+    widget: GymTrackerWidget
   },
   pomodoro: {
     id: 'pomodoro',
